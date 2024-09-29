@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FullCalendar</title>
+  </head>
+  <body>
+    <div class="main-container">
+      <div class="header">
+        <img
+          src="https://cdn-icons-png.flaticon.com/512/3652/3652267.png"
+          class="logo"
+          alt=""
+        />
+        <h1>Prueba Calendario</h1>
+      </div>
+      <div class="calendar-container"></div>
+      <footer class="footer">
+        <img
+          src="https://certificadossena.net/wp-content/uploads/2022/10/logo-sena-negro-png-2022-300x294.png"
+          class="logoS"
+          alt=""
+        />
+        <a href="https://libreriasjs.com">www.libreriasjs.com</a>
+      </footer>
+    </div>
+    <dile-modal id="event-modal" class="modal-container">
+      <h2>Gestionar evento</h2>
+      <form>
+        <input class="inputtxt" type="text" name="area" placeholder="Area" />
+        <input
+          class="inputtxt"
+          type="text"
+          placeholder="Nombre del evento"
+          name="title"
+        />
+        <textarea
+          name="description"
+          id=""
+          cols="30"
+          rows="6"
+          placeholder="Descripción del evento"
+        ></textarea>
+        <input class="inputtxt" type="text" placeholder="URL" name="vinculo" />
+        <label class="lbarchivo" for="filein">Seleccionar archivo</label>
+        <input type="file" name="img" id="filein" class="inpimg" />
+        <span class="filename" id="fileName">Ningún archivo seleccionado</span>
+        <div class="btns-container">
+          <button type="submit">Guardar</button>
+          <button type="button" class="delete-event-btn d-none">
+            Eliminar
+          </button>
+        </div>
+      </form>
+    </dile-modal>
+    <script type="module" src="main.js"></script>
+  </body>
+</html>
