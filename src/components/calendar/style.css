@@ -184,6 +184,9 @@ body {
   border-color: #061c29;
 }
 .fc-toolbar-title {
+  text-transform: lowercase;
+}
+.fc-toolbar-title::first-letter {
   text-transform: uppercase;
 }
 @media (max-width: 768px) {
