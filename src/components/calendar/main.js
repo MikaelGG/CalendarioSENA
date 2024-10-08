@@ -3,7 +3,7 @@ import LocaleEs from "@fullcalendar/core/locales/es";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import EventManager from "./scripts/EventManager";
+import EventManager from "../../controller/scripts/EventManager";
 import listPlugin from "@fullcalendar/list";
 import "@dile/dile-modal/dile-modal";
 import "./style.css";
@@ -16,23 +16,57 @@ let selectedEvent = null;
 
 const eventManager = new EventManager();
 
+console.log("Eventos actuales:", eventManager.getEvents());
+
+let isEditMode = false;
+
 const handleOnSelect = (info) => {
   console.log("selected " + info.startStr + " to " + info.endStr);
   selectedInfo = info;
-  eventModal.open();
+  isEditMode = false;
+  openModal();
 };
 
 const handleOnClickEvent = (data) => {
-  form.querySelector('[name="area"]').value = data.event.extendedProps.area;
-  form.querySelector('[name="title"]').value = data.event.title;
-  form.querySelector('[name="description"]').value =
-    data.event.extendedProps.description;
-  form.querySelector('[name="vinculo"]').value =
-    data.event.extendedProps.vinculo;
-  // form.querySelector('[name="img"]').value = data.event.extendedProps.img;
   selectedEvent = data.event;
-  eventModal.querySelector(".delete-event-btn").classList.remove("d-none");
-  eventModal.querySelector("button[type='submit']").innerHTML = "Editar";
+  isEditMode = true;
+  openModal();
+};
+
+const openModal = () => {
+  if (isEditMode && selectedEvent) {
+    // Modo edición
+    form.querySelector('[name="area"]').value =
+      selectedEvent.extendedProps.area;
+    form.querySelector('[name="title"]').value = selectedEvent.title;
+    form.querySelector('[name="description"]').value =
+      selectedEvent.extendedProps.description;
+    form.querySelector('[name="vinculo"]').value =
+      selectedEvent.extendedProps.vinculo;
+
+    const btnsContainer = eventModal.querySelector(
+      ".btns-container, .btns-container2"
+    );
+    if (btnsContainer) {
+      btnsContainer.classList.remove("btns-container2");
+      btnsContainer.classList.add("btns-container");
+    }
+    eventModal.querySelector(".delete-event-btn").classList.remove("d-none");
+    eventModal.querySelector("button[type='submit']").innerHTML = "Editar";
+  } else {
+    // Modo registro
+    form.reset();
+    const btnsContainer = eventModal.querySelector(
+      ".btns-container, .btns-container2"
+    );
+    if (btnsContainer) {
+      btnsContainer.classList.remove("btns-container");
+      btnsContainer.classList.add("btns-container2");
+    }
+    eventModal.querySelector(".delete-event-btn").classList.add("d-none");
+    eventModal.querySelector("button[type='submit']").innerHTML = "Registrar";
+  }
+
   eventModal.open();
 };
 
@@ -42,16 +76,16 @@ const handleOnSubmitForm = (e) => {
   const title = e.target.querySelector('[name="title"]').value;
   const description = e.target.querySelector('[name="description"]').value;
   const vinculo = e.target.querySelector('[name="vinculo"]').value;
-  // const img = e.target.querySelector('[name="img"]').value;
+
   if (!area.trim() || !title.trim() || !description.trim() || !vinculo.trim()) {
     return;
   }
-  if (selectedEvent) {
+
+  if (isEditMode && selectedEvent) {
     selectedEvent.setExtendedProp("area", area);
     selectedEvent.setProp("title", title);
     selectedEvent.setExtendedProp("description", description);
     selectedEvent.setExtendedProp("vinculo", vinculo);
-    // selectedEvent.setExtendedProp("img", img);
     eventManager.updateEvent(
       { area, title, description, vinculo },
       selectedEvent.id
@@ -82,15 +116,37 @@ eventModal.querySelector(".delete-event-btn").addEventListener("click", () => {
 
 form.addEventListener("submit", handleOnSubmitForm);
 eventModal.addEventListener("dile-modal-closed", () => {
-  form.querySelector('[name="area"]').value = "";
-  form.querySelector('[name="title"]').value = "";
-  form.querySelector('[name="description"]').value = "";
-  form.querySelector('[name="vinculo"]').value = "";
-  eventModal.querySelector(".delete-event-btn").classList.add("d-none");
-  eventModal.querySelector("button[type='submit']").innerHTML = "Guardar";
+  form.reset();
   selectedInfo = null;
   selectedEvent = null;
+  isEditMode = false;
 });
+
+// Función para actualizar el resaltado de las celdas
+function updateTimeSlotHighlight(start, end) {
+  const timeLabels = document.querySelectorAll(".fc-timegrid-slot-label");
+  timeLabels.forEach((label) => {
+    const labelTime = label.dataset.time;
+    if (labelTime) {
+      const [hour, minute] = labelTime.split(":").map(Number);
+      const labelMinutes = hour * 60 + minute;
+      const startMinutes = start.getHours() * 60 + start.getMinutes();
+      const endMinutes = end.getHours() * 60 + end.getMinutes();
+      // Incluye el final en el resaltado
+      if (labelMinutes >= startMinutes && labelMinutes <= endMinutes) {
+        label.style.backgroundColor = "rgba(0, 123, 255, 0.2)"; // Color de resaltado
+      } else {
+        label.style.backgroundColor = ""; // Restaurar color original
+      }
+    }
+  });
+}
+function clearTimeSlotHighlight() {
+  const timeLabels = document.querySelectorAll(".fc-timegrid-slot-label");
+  timeLabels.forEach((label) => {
+    label.style.backgroundColor = ""; // Restaura el color original
+  });
+}
 
 const calendar = new Calendar(container, {
   plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
@@ -102,9 +158,42 @@ const calendar = new Calendar(container, {
     right: "dayGridMonth,timeGridWeek,listWeek",
   },
   selectable: true,
+  slotLabelFormat: {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+    meridiem: "short",
+  },
+  // Define how many hours to display
+  views: {
+    timeGridWeek: {
+      slotDuration: "00:30:00", // Duration of each slot
+      slotLabelInterval: { minutes: 30 }, // Show every hour
+      allDaySlot: false,
+      nextDayThreshold: "00:00:00", // Don't show all-day slots
+    },
+  },
+  eventDurationEditable: true, // Asegura que se pueda ajustar la duración de los eventos
+  snapDuration: "00:30:00",
   events: eventManager.getEvents(),
   eventClick: handleOnClickEvent,
-  select: handleOnSelect,
+  select: function (info) {
+    // Guardar la selección
+    selectedInfo = info;
+
+    // Forzar la deselección visual inmediatamente
+    setTimeout(() => {
+      calendar.unselect(); // Quitar la selección visual
+      clearTimeSlotHighlight(); // Limpiar cualquier resaltado
+
+      // Abre el modal justo después de quitar la selección visual
+      openModal();
+    }, 0);
+  },
+  unselect: function () {
+    clearTimeSlotHighlight(); // Limpia el resaltado al deseleccionar
+  },
+
   eventContent: function (arg) {
     const eventEl = document.createElement("div");
     eventEl.className = "custom-event-content";
@@ -116,14 +205,22 @@ const calendar = new Calendar(container, {
         ? arg.event.start.toLocaleTimeString("es-ES", {
             hour: "2-digit",
             minute: "2-digit",
+            hour12: true,
+            meridiem: "short",
           })
         : "";
-      const endTime = arg.event.end
-        ? arg.event.end.toLocaleTimeString("es-ES", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "";
+      let endTime = "";
+      if (arg.event.end) {
+        const endDate = new Date(arg.event.end); // Creamos una copia de la fecha de fin
+        endDate.setMinutes(endDate.getMinutes() - 30);
+        endTime = endDate.toLocaleTimeString("es-ES", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+          meridiem: "short",
+        });
+      }
+
       timeInfo.textContent = `${startTime} - ${endTime}`;
       eventEl.appendChild(timeInfo);
     }
@@ -150,6 +247,70 @@ const calendar = new Calendar(container, {
     return { domNodes: [eventEl] };
   },
 });
+let isSelecting = false;
+let selectionStart = null;
+let selectionEnd = null;
+
+container.addEventListener("mousedown", (event) => {
+  const timeSlot = event.target.closest(".fc-timegrid-slot");
+  if (timeSlot) {
+    isSelecting = true;
+    const timeData = timeSlot.dataset.time.split(":");
+    selectionStart = new Date();
+    selectionStart.setHours(parseInt(timeData[0]), parseInt(timeData[1]), 0);
+
+    // Ajustamos la selección final para incluir la primera celda
+    selectionEnd = new Date(selectionStart); // Inicializa selección de arrastre
+    updateTimeSlotHighlight(selectionStart, selectionEnd); // Actualiza de inmediato
+  }
+});
+
+// Listener para arrastrar y actualizar en vivo
+container.addEventListener("mousemove", (event) => {
+  if (isSelecting) {
+    const timeSlot = event.target.closest(".fc-timegrid-slot");
+    if (timeSlot) {
+      const timeData = timeSlot.dataset.time.split(":");
+      selectionEnd = new Date();
+      selectionEnd.setHours(parseInt(timeData[0]), parseInt(timeData[1]), 0);
+      updateTimeSlotHighlight(selectionStart, selectionEnd);
+    }
+  }
+});
+
+// Listener para finalizar la selección
+function isExactHour(date) {
+  return date.getMinutes() === 0 && date.getSeconds() === 0;
+}
+
+// Modificar el listener de mouseup
+container.addEventListener("mouseup", (event) => {
+  if (isSelecting) {
+    isSelecting = false;
+    clearTimeSlotHighlight(); // Limpia el resaltado manual de las celdas
+
+    const timeSlot = event.target.closest(".fc-timegrid-slot");
+    if (timeSlot) {
+      const timeData = timeSlot.dataset.time.split(":");
+      const endTime = new Date();
+      endTime.setHours(parseInt(timeData[0]), parseInt(timeData[1]), 0);
+
+      // Asignar los valores seleccionados
+      selectedInfo = {
+        start: selectionStart,
+        end: endTime,
+        allDay: false,
+      };
+
+      // Quitar la selección visual del calendario y deshacer cualquier selección activa
+      calendar.unselect(); // Limpia la selección de FullCalendar
+      clearTimeSlotHighlight(); // Limpia cualquier resaltado en los slots
+
+      openModal(); // Abre el modal después de soltar
+    }
+  }
+});
+
 calendar.render();
 
 //seleccionador de archivos
