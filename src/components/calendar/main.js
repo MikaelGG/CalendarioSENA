@@ -44,12 +44,15 @@ const openModal = () => {
     form.querySelector('[name="vinculo"]').value =
       selectedEvent.extendedProps.vinculo;
 
+    const tev = document.getElementById("tev");
+
     const btnsContainer = eventModal.querySelector(
       ".btns-container, .btns-container2"
     );
     if (btnsContainer) {
       btnsContainer.classList.remove("btns-container2");
       btnsContainer.classList.add("btns-container");
+      tev.innerHTML = "Editar evento";
     }
     eventModal.querySelector(".delete-event-btn").classList.remove("d-none");
     eventModal.querySelector("button[type='submit']").innerHTML = "Editar";
@@ -193,7 +196,6 @@ const calendar = new Calendar(container, {
   unselect: function () {
     clearTimeSlotHighlight(); // Limpia el resaltado al deseleccionar
   },
-
   eventContent: function (arg) {
     const eventEl = document.createElement("div");
     eventEl.className = "custom-event-content";
@@ -325,3 +327,21 @@ fileInput.addEventListener("change", function () {
     fileName.textContent = "Ningún archivo seleccionado";
   }
 });
+
+//Abrir modal de eventos
+const event = document.getElementById("eventmodal");
+const buttoneve = document.getElementById("myBtn");
+const closeEven = document.getElementsByClassName("x")[0];
+
+buttoneve.onclick = function () {
+  event.style.display = "block";
+};
+
+closeEven.onclick = function () {
+  event.style.display = "none";
+};
+window.onclick = function (e) {
+  if (e.target == event) {
+    modal.style.display = "none";
+  }
+};

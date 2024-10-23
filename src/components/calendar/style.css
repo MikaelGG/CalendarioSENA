@@ -25,27 +25,16 @@
   max-height: 100%;
   word-wrap: break-word;
 }
-
-.event-area {
-  font-weight: bold;
-  color: #666;
-  margin-bottom: 2px;
+/* Estilo para eventos en la vista de semana y mes */
+/* Estilo para eventos en la vista de semana */
+.fc .fc-timegrid-event {
+  color: white !important; /* Texto blanco */
 }
 
-.event-title {
-  font-weight: bold;
-  margin-bottom: 2px;
-}
-
-.event-time {
-  font-size: 0.9em;
-  color: #444;
-  margin-bottom: 1px;
-}
-
-.event-description {
-  font-style: italic;
-  color: #777;
+/* Estilo para eventos en la vista de mes */
+.fc .fc-list-event,
+.fc .fc-daygrid-event {
+  color: black !important; /* Texto negro */
 }
 
 /* Ajusta el tamaño de las celdas del calendario para que quepa más contenido */
@@ -79,7 +68,7 @@ body {
   flex-direction: column;
 }
 .main-container .header {
-  color: #fff;
+  color: #f0f0f0;
   background-color: var(--mainColor);
   padding: 20px 0;
 }
@@ -231,6 +220,14 @@ body {
 }
 .fc-toolbar-title::first-letter {
   text-transform: uppercase;
+}
+.fc-event-main {
+  margin: 3px;
+}
+.fc-daygrid-event-harness-abs {
+  max-width: 130%;
+  margin-left: auto;
+  margin-right: auto;
 }
 .barratxt {
   max-width: 100%;

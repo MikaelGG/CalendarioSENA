@@ -1,13 +1,14 @@
-import React from "react";
+import express from "express";
+import morgan from "morgan";
 
-function Component1() {
-  return (
-    <div>
-      <button>
-        <a href="/src/components/calendar/index.html">Calendario</a>
-      </button>
-    </div>
-  );
-}
+const app = express();
 
-export default Component1;
+// import routes
+import event from "../src/routes/event.route.js";
+
+//middleware
+app.use(morgan("dev"));
+app.use(express.json());
+
+// routes
+app.use("/api/event", event);
