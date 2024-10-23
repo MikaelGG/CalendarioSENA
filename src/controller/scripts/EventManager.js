@@ -1,5 +1,3 @@
-import { getConnection } from "../../models/database.js";
-
 export default class EventManager {
   constructor() {
     this.eventsKey = "ljs-events";
