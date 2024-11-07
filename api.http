@@ -1,4 +1,24 @@
-get 
-content-type: application/json
+POST http://localhost:4000/api/event
+content-Type: application/json
+
+{
+  "id": "fechadehoy1223442/212312",
+  "title": "Evento organizado",
+  "start": "2024-10-29",
+  "end": "2024-10-31",
+  "area": "Bienestar al aprendiz",
+  "description": "Este es un evento hecho por la mayor parte de la administracion de el SENA encargado de bla bla bla",
+  "vinculo": "www.googleform.com.co",
+  "imagen": "www.imagenparabd.com.co"
+}
+
+
+  # {
+  #   "area": "Bienestar al aprendiz",
+  #   "title": "Editando dapi",
+  #   "description": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+  #   "vinculo": "eeeeeeeeeeeeeeeeeeeeee"
+  # }
+
 
 

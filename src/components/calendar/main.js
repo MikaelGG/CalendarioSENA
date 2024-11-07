@@ -3,7 +3,7 @@ import LocaleEs from "@fullcalendar/core/locales/es";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import EventManager from "../../controller/scripts/EventManager";
+import EventManager from "./scripts/EventManager";
 import listPlugin from "@fullcalendar/list";
 import "@dile/dile-modal/dile-modal";
 import "./style.css";
@@ -34,15 +34,26 @@ const handleOnClickEvent = (data) => {
 };
 
 const openModal = () => {
+  console.log(selectedEvent);
   if (isEditMode && selectedEvent) {
     // Modo edición
     form.querySelector('[name="area"]').value =
       selectedEvent.extendedProps.area;
-    form.querySelector('[name="title"]').value = selectedEvent.title;
+    form.querySelector('[name="title"]').value =
+      selectedEvent.extendedProps.title;
     form.querySelector('[name="description"]').value =
       selectedEvent.extendedProps.description;
     form.querySelector('[name="vinculo"]').value =
       selectedEvent.extendedProps.vinculo;
+
+    // Extraer solo el nombre del archivo de la ruta de imagen
+    const fullPath = selectedEvent.extendedProps.imagen;
+    const imageName = fullPath
+      ? fullPath.split("\\").pop().split("/").pop()
+      : "Ningún archivo seleccionado";
+
+    // Mostrar el nombre del archivo en el span del formulario
+    document.getElementById("fileName").textContent = imageName;
 
     const tev = document.getElementById("tev");
 
@@ -59,12 +70,15 @@ const openModal = () => {
   } else {
     // Modo registro
     form.reset();
+    document.getElementById("fileName").textContent =
+      "Ningún archivo seleccionado";
     const btnsContainer = eventModal.querySelector(
       ".btns-container, .btns-container2"
     );
     if (btnsContainer) {
       btnsContainer.classList.remove("btns-container");
       btnsContainer.classList.add("btns-container2");
+      tev.innerHTML = "Gestionar evento";
     }
     eventModal.querySelector(".delete-event-btn").classList.add("d-none");
     eventModal.querySelector("button[type='submit']").innerHTML = "Registrar";
@@ -73,41 +87,65 @@ const openModal = () => {
   eventModal.open();
 };
 
-const handleOnSubmitForm = (e) => {
+const handleOnSubmitForm = async (e) => {
   e.preventDefault();
   const area = e.target.querySelector('[name="area"]').value;
   const title = e.target.querySelector('[name="title"]').value;
   const description = e.target.querySelector('[name="description"]').value;
   const vinculo = e.target.querySelector('[name="vinculo"]').value;
+  const imagen = e.target.querySelector('[name="img"]').files[0];
 
-  if (!area.trim() || !title.trim() || !description.trim() || !vinculo.trim()) {
-    return;
+  const formData = new FormData();
+  formData.append("id", selectedEvent ? selectedEvent.id : Date.now());
+  formData.append(
+    "extendedProps",
+    JSON.stringify({
+      area,
+      title,
+      description,
+      vinculo,
+    })
+  );
+
+  if (imagen) {
+    formData.append("img", imagen);
   }
 
   if (isEditMode && selectedEvent) {
-    selectedEvent.setExtendedProp("area", area);
-    selectedEvent.setProp("title", title);
-    selectedEvent.setExtendedProp("description", description);
-    selectedEvent.setExtendedProp("vinculo", vinculo);
-    eventManager.updateEvent(
-      { area, title, description, vinculo },
-      selectedEvent.id
-    );
-  } else {
-    const event = {
-      id: `${Date.now()}`,
-      title,
-      extendedProps: {
-        area,
-        description,
-        vinculo,
-      },
-      start: selectedInfo.startStr,
-      end: selectedInfo.endStr,
-    };
-    eventManager.saveEvent(event);
-    calendar.addEvent(event);
+    formData.append("currentImage", selectedEvent.extendedProps.imagen || null);
   }
+
+  if (!isEditMode) {
+    formData.append("start", selectedInfo.startStr);
+    formData.append("end", selectedInfo.endStr);
+  } else {
+    formData.append("start", selectedEvent.start.toISOString());
+    formData.append("end", selectedEvent.end.toISOString());
+  }
+
+  if (isEditMode && selectedEvent) {
+    await eventManager.updateEvent(formData, selectedEvent.id);
+    await loadEvents();
+  } else {
+    const response = await eventManager.saveEvent(formData);
+    const savedEvent = response.event;
+    console.log("Respuesta del servidor:", savedEvent);
+
+    // Agregar el evento al calendario
+    calendar.addEvent({
+      id: savedEvent.id, // Asegúrate de que el id se devuelva correctamente desde el backend
+      start: savedEvent.fechainicio,
+      end: savedEvent.fechafinal,
+      extendedProps: {
+        title: savedEvent.titulo,
+        area: savedEvent.area,
+        description: savedEvent.descripcion,
+        vinculo: savedEvent.url,
+        imagen: savedEvent.imagen,
+      },
+    });
+  }
+  calendar.refetchEvents();
   eventModal.close();
 };
 
@@ -118,6 +156,7 @@ eventModal.querySelector(".delete-event-btn").addEventListener("click", () => {
 });
 
 form.addEventListener("submit", handleOnSubmitForm);
+
 eventModal.addEventListener("dile-modal-closed", () => {
   form.reset();
   selectedInfo = null;
@@ -173,12 +212,49 @@ const calendar = new Calendar(container, {
       slotDuration: "00:30:00", // Duration of each slot
       slotLabelInterval: { minutes: 30 }, // Show every hour
       allDaySlot: false,
-      nextDayThreshold: "00:00:00", // Don't show all-day slots
     },
   },
   eventDurationEditable: true, // Asegura que se pueda ajustar la duración de los eventos
   snapDuration: "00:30:00",
   events: eventManager.getEvents(),
+  eventDidMount: function (info) {
+    // Solo para la vista de lista (listWeek)
+    if (info.view.type === "listWeek") {
+      const eventElement = info.el;
+      const startDate = info.event.start;
+      const endDate = info.event.end || info.event.start;
+      endDate.setMinutes(endDate.getMinutes() - 30);
+
+      // Comprobamos si las fechas de inicio y fin son diferentes
+      if (startDate.toDateString() !== endDate.toDateString()) {
+        // Modificar el texto del encabezado del evento para reflejar el rango de fechas
+        const dayRangeText = `${startDate.toLocaleDateString("es-ES", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+          meridiem: "short",
+        })} - ${endDate.toLocaleDateString("es-ES", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+          meridiem: "short",
+        })}`;
+
+        // Busca el elemento que contiene la fecha en la lista y modifícalo
+        const dateHeader = eventElement.querySelector(".fc-list-event-time");
+        if (dateHeader) {
+          dateHeader.innerHTML = dayRangeText; // Asigna el nuevo texto
+        }
+      }
+    }
+  },
+
   eventClick: handleOnClickEvent,
   select: function (info) {
     // Guardar la selección
@@ -234,7 +310,7 @@ const calendar = new Calendar(container, {
 
     const title = document.createElement("div");
     title.className = "event-title";
-    title.textContent = arg.event.title;
+    title.textContent = arg.event.extendedProps.title;
     eventEl.appendChild(title);
 
     const description = document.createElement("div");
@@ -249,6 +325,37 @@ const calendar = new Calendar(container, {
     return { domNodes: [eventEl] };
   },
 });
+
+// Cargar eventos desde el backend al inicializar el calendario
+async function loadEvents() {
+  try {
+    const events = await eventManager.getEvents(); // Espera a que la promesa se resuelva
+    console.log("Eventos actuales:", events); // Muestra los eventos obtenidos
+
+    // Mapea los eventos al formato que FullCalendar espera
+    const mappedEvents = events.map((event) => ({
+      id: event.id,
+      start: event.fechainicio, // Mapea la fecha de inicio
+      end: event.fechafinal, // Mapea la fecha final
+      extendedProps: {
+        title: event.titulo, // Mapea el título
+        area: event.area,
+        description: event.descripcion,
+        vinculo: event.url,
+        imagen: event.imagen,
+      },
+    }));
+
+    calendar.removeAllEvents();
+    calendar.addEventSource(mappedEvents); // Agrega los eventos al calendario
+    calendar.render(); // Renderiza el calendario
+  } catch (error) {
+    console.error("Error obteniendo eventos:", error); // Muestra cualquier error en la consola
+  }
+}
+loadEvents();
+calendar.render();
+
 let isSelecting = false;
 let selectionStart = null;
 let selectionEnd = null;
@@ -313,8 +420,6 @@ container.addEventListener("mouseup", (event) => {
   }
 });
 
-calendar.render();
-
 //seleccionador de archivos
 
 const fileInput = document.getElementById("filein");
@@ -334,7 +439,7 @@ const buttoneve = document.getElementById("myBtn");
 const closeEven = document.getElementsByClassName("x")[0];
 
 buttoneve.onclick = function () {
-  event.style.display = "block";
+  event.open();
 };
 
 closeEven.onclick = function () {

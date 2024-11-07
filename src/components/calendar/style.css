@@ -17,6 +17,11 @@
   white-space: normal !important;
   align-items: normal !important;
 }
+.work-sans {
+  font-family: "Work Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
 
 .custom-event-content {
   font-size: 0.8em;
@@ -24,7 +29,34 @@
   overflow: hidden;
   max-height: 100%;
   word-wrap: break-word;
+  font-family: "Work Sans", sans-serif;
+  font-weight: 400;
+  font-optical-sizing: auto;
+  font-style: normal;
 }
+
+.fc .fc-col-header-cell-cushion {
+  font-family: "Work Sans", sans-serif;
+  font-weight: 700;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
+.fc-timegrid-slot-label-cushion,
+.fc-list-event-time {
+  font-family: "Work Sans", sans-serif;
+  font-weight: 100;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+.fc-list-day-text,
+.fc-list-day-side-text {
+  font-family: "Work Sans", sans-serif;
+  font-weight: 700;
+  font-optical-sizing: auto;
+  font-style: normal;
+}
+
 /* Estilo para eventos en la vista de semana y mes */
 /* Estilo para eventos en la vista de semana */
 .fc .fc-timegrid-event {
@@ -36,7 +68,6 @@
 .fc .fc-daygrid-event {
   color: black !important; /* Texto negro */
 }
-
 /* Ajusta el tamaño de las celdas del calendario para que quepa más contenido */
 .fc-daygrid-day-frame {
   min-height: 100px;
@@ -45,6 +76,7 @@
 /* Asegura que los eventos en la vista de semana también se ajusten correctamente */
 .fc-timegrid-event-harness {
   overflow: hidden;
+  display: none;
 }
 
 .fc-timegrid-event {
@@ -53,6 +85,13 @@
 }
 .fc-event {
   cursor: pointer;
+}
+.fc td,
+.fc th {
+  vertical-align: middle;
+}
+.fc-event-time {
+  display: none;
 }
 
 body {
@@ -67,23 +106,40 @@ body {
   display: flex;
   flex-direction: column;
 }
-.main-container .header {
-  color: #f0f0f0;
-  background-color: var(--mainColor);
-  padding: 20px 0;
-}
-.main-container .header .logo {
-  display: block;
+.header {
   width: 100%;
-  max-width: 60px;
-  margin: 0 auto;
+  position: relative;
+  height: 130px;
+  overflow: hidden;
+  top: 0;
 }
-.main-container .header h1 {
-  margin: 0;
-  font-weight: 100;
-  font-size: 2rem;
-  text-align: center;
+.fondo {
+  content: url(../../../public/Fondo.svg);
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0px;
+  object-fit: cover;
 }
+.sena {
+  content: url(../../../public/SENA.svg);
+  width: 483px;
+  height: 171px;
+  position: absolute;
+  left: 5px;
+  top: -20px;
+  object-fit: cover;
+}
+.adso {
+  content: url(../../../public/ADSO.svg);
+  width: 252px;
+  height: 107px;
+  position: absolute;
+  left: 1038px;
+  top: 14px;
+  object-fit: cover;
+}
+
 .main-container .calendar-container {
   flex: 1;
   max-width: 1300px;
@@ -91,16 +147,30 @@ body {
   width: 100%;
   padding: 20px;
 }
-.main-container .footer {
-  color: #fff;
-  background-color: var(--mainColorDarker);
-  padding: 20px;
-  font-size: 0.9rem;
-  text-align: center;
+.afooter,
+.footer {
+  background-color: #04324d;
+  height: 100px;
+  width: 100%;
+  color: #ffffff;
+  bottom: 0;
 }
-.main-container .footer a {
-  color: #fff;
-  text-decoration: none;
+.footertxt {
+  text-align: center;
+  margin-top: 30px;
+  margin-left: 40px;
+  font-weight: 400;
+}
+.afooter:hover {
+  color: #39a900;
+}
+.senaverde {
+  width: 69.87px;
+  height: 69.87px;
+  position: absolute;
+  margin-top: 15px;
+  margin-left: 70px;
+  overflow: visible;
 }
 .modal-container h2 {
   color: var(--mainColor);
@@ -186,6 +256,10 @@ body {
 }
 .fc .fc-toolbar-title {
   color: var(--mainColorDarker);
+  font-family: "Work Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-weight: 600;
 }
 .inpimg {
   display: none;
@@ -210,6 +284,10 @@ body {
 .fc .fc-button-primary {
   background-color: #04324d;
   border-color: #04324d;
+  font-family: "Work Sans", sans-serif;
+  font-weight: 600;
+  font-optical-sizing: auto;
+  font-style: normal;
 }
 .fc .fc-button-primary:not(:disabled).fc-button-active {
   background-color: #061c29;
@@ -225,15 +303,16 @@ body {
   margin: 3px;
 }
 .fc-daygrid-event-harness-abs {
-  max-width: 130%;
+  max-width: 180%;
   margin-left: auto;
   margin-right: auto;
 }
 .barratxt {
   max-width: 100%;
-  background-color: #04324d;
+  background-color: #39a900;
+  font-weight: 700;
   text-align: center;
-  color: #fdc300;
+  color: #ffffff;
   font-size: 40px;
 }
 .modal-evento,
@@ -342,7 +421,7 @@ body {
   cursor: pointer;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .fc .fc-toolbar {
     display: block;
     text-align: center;
@@ -352,5 +431,92 @@ body {
   }
   .barratxt {
     font-size: 25px;
+  }
+  .sena,
+  .adso {
+    display: none;
+  }
+  .header {
+    width: 100%;
+    position: relative;
+    height: 80px;
+    overflow: hidden;
+    top: 0;
+  }
+  .senamobile {
+    position: absolute;
+    width: 255px;
+    height: 55px;
+    left: 5px;
+    top: 12px;
+    object-fit: contain;
+  }
+  .adsomobile {
+    position: absolute;
+    width: 110px;
+    height: 47px;
+    left: 258px;
+    top: 20px;
+    right: 40px;
+    object-fit: contain; /* cambiado a contain para mantener proporción */
+  }
+  .footer {
+    background-color: #04324d;
+    height: 70px;
+    width: 100%;
+    color: #ffffff;
+    bottom: 0;
+  }
+  .senaverde {
+    width: 45px;
+    height: 45px;
+    position: absolute;
+    margin-top: 14px;
+    margin-left: 20px;
+    overflow: visible;
+  }
+  .footertxt {
+    text-align: center;
+    margin-top: 8px;
+    margin-left: 80px;
+    font-size: 10px;
+    width: 260px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 820px) {
+  .adsomobile {
+    position: absolute;
+    width: 210px;
+    height: 87px;
+    left: 558px;
+    top: 26px;
+    right: 40px;
+    object-fit: contain; /* cambiado a contain para mantener proporción */
+  }
+  .footertxt {
+    text-align: center;
+    margin-top: 25px;
+    margin-left: 190px;
+    font-size: 15px;
+    width: 580px;
+  }
+}
+@media (min-width: 823px) and (max-width: 1024px) {
+  .adsomobile {
+    position: absolute;
+    width: 210px;
+    height: 87px;
+    left: 780px;
+    top: 26px;
+    right: 40px;
+    object-fit: contain; /* cambiado a contain para mantener proporción */
+  }
+  .footertxt {
+    text-align: center;
+    margin-top: 25px;
+    margin-left: 250px;
+    font-size: 16px;
+    width: 620px;
   }
 }

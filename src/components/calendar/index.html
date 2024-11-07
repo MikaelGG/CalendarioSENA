@@ -9,22 +9,36 @@
   <body>
     <div class="main-container">
       <div class="header">
+        <img class="fondo" alt="fondo" />
+        <a href="http://localhost:4000/api/event" class="asena">
+          <img class="sena" alt="sena" />
+        </a>
         <img
-          src="https://cdn-icons-png.flaticon.com/512/3652/3652267.png"
-          class="logo"
-          alt=""
+          src="../../../public/SENAP.png"
+          class="senamobile"
+          alt="senamobile"
         />
-        <h1>Prueba Calendario</h1>
+        <img class="adso" alt="adso" />
+        <img
+          src="../../../public/ADSOP.png"
+          class="adsomobile"
+          alt="adsomobile"
+        />
       </div>
-      <div class="barratxt">Calendario de eventos</div>
+      <div class="barratxt work-sans">Calendario de eventos</div>
       <div class="calendar-container"></div>
       <footer class="footer">
         <img
-          src="https://certificadossena.net/wp-content/uploads/2022/10/logo-sena-negro-png-2022-300x294.png"
-          class="logoS"
-          alt=""
+          src="../../../public/SENAVERDE.svg"
+          class="senaverde"
+          alt="senaverde"
         />
-        <a href="https://libreriasjs.com">www.libreriasjs.com</a>
+        <p class="footertxt work-sans">
+          © 2024 Servicio Nacional De Aprendizaje SENA | Todos los derechos
+          reservados. <br />
+          <a href="" class="afooter">Ver Equipo de Desarrollo</a>, Programa
+          Análisis y Desarrollo de Software. | Versión 1.0.0
+        </p>
       </footer>
     </div>
     <dile-modal id="event-modal" class="modal-container">
@@ -60,7 +74,7 @@
         </div>
       </form>
     </dile-modal>
-    <div class="modal-evento" id="eventmodal">
+    <dile-modal class="modal-evento" id="eventmodal">
       <div class="rectangle-25"></div>
       <div class="www-bienestaralaprendiz-googleforms-com">
         www.bienestaralaprendiz.googleforms.com
@@ -76,7 +90,7 @@
       <div class="bienestar-al-aprendiz">Bienestar al aprendiz</div>
       <div class="evento">Evento</div>
       <div class="x">x</div>
-    </div>
+    </dile-modal>
     <button id="myBtn">Open modal</button>
     <script type="module" src="main.js"></script>
   </body>
