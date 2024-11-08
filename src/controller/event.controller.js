@@ -1,5 +1,7 @@
 import { getConnection } from "../models/database.js";
+import { fileURLToPath } from "url";
 import path from "path";
+import { promises as fs } from "fs";
 
 const crearEvento = async (req, res) => {
   try {
@@ -8,10 +10,7 @@ const crearEvento = async (req, res) => {
 
     const { id, start, end, extendedProps } = req.body;
 
-    let imgPath = null;
-    if (req.file) {
-      const imgPath = path.join("public", req.file.filename);
-    }
+    const imgPath = req.file ? req.file.filename : null;
 
     // Verificar el contenido de extendedProps y parsearlo
     let title, area, description, vinculo;
@@ -45,7 +44,6 @@ const crearEvento = async (req, res) => {
       return res.status(400).json({
         message: "Title, area and description are required",
       });
-      console.log("Title, area and description are required");
     }
 
     const formatDate = (dateStr) => {
@@ -185,10 +183,52 @@ const actualizarEvento = async (req, res) => {
   }
 };
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const eliminarEvento = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log("ID recibido:", id);
     const connection = await getConnection();
+
+    const [event] = await connection.query(
+      "SELECT imagen FROM eventos WHERE id = ?",
+      [id]
+    );
+
+    if (event.length === 0) {
+      return res.status(404).json({ message: "Evento no encontrado" });
+    }
+
+    const imageName = event[0].imagen;
+    console.log("Nombre de imagen encontrado:", imageName);
+    if (imageName) {
+      try {
+        // Normalizar la ruta y decodificar caracteres especiales
+        const normalizedImageName = decodeURIComponent(
+          imageName.replace(/\\/g, "/")
+        );
+        const imagePath = path.join(
+          __dirname,
+          "../../public",
+          normalizedImageName
+        );
+
+        console.log("Ruta completa de la imagen:", imagePath);
+
+        // Intentar eliminar el archivo directamente usando fs.promises
+        await fs.unlink(imagePath);
+        console.log("Imagen eliminada correctamente:", imagePath);
+      } catch (error) {
+        if (error.code === "ENOENT") {
+          console.log("La imagen no existe en el servidor:", imagePath);
+        } else {
+          console.error("Error al eliminar la imagen:", error);
+        }
+      }
+    }
+
     await connection.query("DELETE FROM eventos WHERE id = ?", id);
     res.status(200).json({ message: "Event deleted" });
   } catch (error) {

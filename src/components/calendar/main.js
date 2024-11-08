@@ -149,11 +149,17 @@ const handleOnSubmitForm = async (e) => {
   eventModal.close();
 };
 
-eventModal.querySelector(".delete-event-btn").addEventListener("click", () => {
-  eventManager.deleteEvent(selectedEvent.id);
-  selectedEvent.remove();
-  eventModal.close();
-});
+eventModal
+  .querySelector(".delete-event-btn")
+  .addEventListener("click", async () => {
+    try {
+      await eventManager.deleteEvent(selectedEvent.id);
+      selectedEvent.remove();
+      eventModal.close();
+    } catch (error) {
+      console.error("Error al eliminar el evento y la imagen:", error);
+    }
+  });
 
 form.addEventListener("submit", handleOnSubmitForm);
 
