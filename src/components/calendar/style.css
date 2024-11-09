@@ -97,7 +97,6 @@
 body {
   padding: 0;
   margin: 0;
-  font-family: "Open Sans", sans-serif;
   background-color: #ffffff;
   color: #191919;
 }
@@ -157,8 +156,8 @@ body {
 }
 .footertxt {
   text-align: center;
-  margin-top: 30px;
   margin-left: 40px;
+  margin-top: 30px;
   font-weight: 400;
 }
 .afooter:hover {
@@ -186,7 +185,10 @@ body {
   display: block;
   width: 100%;
   box-sizing: border-box;
-  font-family: "Open Sans", sans-serif;
+  font-family: "Work Sans", sans-serif;
+  font-weight: 600;
+  font-optical-sizing: auto;
+  font-style: normal;
   padding: 10px;
   margin-bottom: 10px;
 }
@@ -215,7 +217,10 @@ body {
   color: #04324d;
   text-align: center;
   background-color: #fdc300;
-  font-family: "WorkSans-SemiBold", sans-serif;
+  font-family: "Work Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-weight: 600;
   font-size: 18px;
   line-height: 130%;
   font-weight: 600;
@@ -233,7 +238,10 @@ body {
   color: #04324d;
   text-align: center;
   background-color: #fd0000d0;
-  font-family: "WorkSans-SemiBold", sans-serif;
+  font-family: "Work Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-weight: 600;
   font-size: 18px;
   line-height: 130%;
   font-weight: 600;
@@ -322,6 +330,7 @@ body {
 .modal-evento {
   position: relative;
 }
+
 .rectangle-25 {
   background: #ffffff;
   border-radius: 72px;
@@ -421,6 +430,26 @@ body {
   cursor: pointer;
 }
 
+.iniciarsesion {
+  max-width: 700px;
+  align-items: end;
+}
+
+.iniciarsesion .inputins {
+  background-color: #eae4e4;
+  border: none;
+  border-radius: 8px;
+  display: block;
+  width: 30%;
+  box-sizing: border-box;
+  font-family: "Work Sans", sans-serif;
+  font-weight: 600;
+  font-optical-sizing: auto;
+  font-style: normal;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
 @media (max-width: 767px) {
   .fc .fc-toolbar {
     display: block;
@@ -477,8 +506,8 @@ body {
   }
   .footertxt {
     text-align: center;
-    margin-top: 8px;
     margin-left: 80px;
+    margin-top: 15px;
     font-size: 10px;
     width: 260px;
   }
@@ -496,8 +525,7 @@ body {
   }
   .footertxt {
     text-align: center;
-    margin-top: 25px;
-    margin-left: 190px;
+    margin-left: 170px;
     font-size: 15px;
     width: 580px;
   }

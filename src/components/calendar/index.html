@@ -2,9 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FullCalendar</title>
+    <link rel="icon" href="/public/CalendarIcon.svg" />
+    <title>Calendario || SENA</title>
   </head>
   <body>
     <div class="main-container">
@@ -42,7 +42,7 @@
       </footer>
     </div>
     <dile-modal id="event-modal" class="modal-container">
-      <h2 id="tev">Gestionar evento</h2>
+      <h2 class="work-sans" id="tev">Gestionar evento</h2>
       <form>
         <input class="inputtxt" type="text" name="area" placeholder="Area" />
         <input
@@ -59,9 +59,13 @@
           placeholder="Descripción del evento"
         ></textarea>
         <input class="inputtxt" type="text" placeholder="URL" name="vinculo" />
-        <label class="lbarchivo" for="filein">Seleccionar archivo</label>
+        <label class="lbarchivo work-sans" for="filein"
+          >Seleccionar archivo</label
+        >
         <input type="file" name="img" id="filein" class="inpimg" />
-        <span class="filename" id="fileName">Ningún archivo seleccionado</span>
+        <span class="filename work-sans" id="fileName"
+          >Ningún archivo seleccionado</span
+        >
         <div class="btns-container">
           <div class="cart-button">
             <button type="submit" class="registrar">Registrar</button>
@@ -91,7 +95,6 @@
       <div class="evento">Evento</div>
       <div class="x">x</div>
     </dile-modal>
-    <button id="myBtn">Open modal</button>
     <script type="module" src="main.js"></script>
   </body>
 </html>

@@ -2,8 +2,65 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" href="/public/CalendarIcon.svg" />
+    <title>Calendario || SENA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/src/components/calendar/style.css" />
   </head>
-  <body></body>
+  <body>
+    <div class="header">
+      <img class="fondo" alt="fondo" />
+      <a href="http://localhost:4000/api/event" class="asena">
+        <img class="sena" alt="sena" />
+      </a>
+      <img
+        src="../../../public/SENAP.png"
+        class="senamobile"
+        alt="senamobile"
+      />
+      <img class="adso" alt="adso" />
+      <img
+        src="../../../public/ADSOP.png"
+        class="adsomobile"
+        alt="adsomobile"
+      />
+    </div>
+    <div class="barratxt work-sans">Calendario de eventos</div>
+    <div class="iniciarsesion work-sans">
+      <h2 id="tev">Iniciar sesion</h2>
+      <form>
+        <input
+          class="inputins"
+          type="text"
+          name="area"
+          placeholder="Ingrese su documento"
+        />
+        <input
+          class="inputins"
+          type="text"
+          placeholder="Ingrese su contraseña"
+          name="title"
+        />
+        <div class="cart-button">
+          <button type="submit" class="registrar">Registrar</button>
+        </div>
+      </form>
+    </div>
+    <div>
+      <img src="/public/landingimg.png" alt="" />
+    </div>
+    <footer class="footer" style="margin-top: -35px">
+      <img
+        src="../../../public/SENAVERDE.svg"
+        class="senaverde"
+        alt="senaverde"
+      />
+      <p class="footertxt work-sans" style="padding-top: 30px">
+        © 2024 Servicio Nacional De Aprendizaje SENA | Todos los derechos
+        reservados. <br />
+        <a href="" class="afooter">Ver Equipo de Desarrollo</a>, Programa
+        Análisis y Desarrollo de Software. | Versión 1.0.0
+      </p>
+    </footer>
+  </body>
 </html>

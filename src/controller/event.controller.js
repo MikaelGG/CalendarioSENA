@@ -1,4 +1,5 @@
 import { getConnection } from "../models/database.js";
+import { parseISO, format } from "date-fns";
 import { fileURLToPath } from "url";
 import path from "path";
 import { promises as fs } from "fs";
@@ -10,7 +11,7 @@ const crearEvento = async (req, res) => {
 
     const { id, start, end, extendedProps } = req.body;
 
-    const imgPath = req.file ? req.file.filename : null;
+    const imgName = req.file ? req.file.filename : null;
 
     // Verificar el contenido de extendedProps y parsearlo
     let title, area, description, vinculo;
@@ -46,29 +47,30 @@ const crearEvento = async (req, res) => {
       });
     }
 
-    const formatDate = (dateStr) => {
-      const date = new Date(dateStr);
-      return date.toISOString().slice(0, 19).replace("T", " ");
-    };
-
     const event = {
       id,
       titulo: title,
       area: area,
       descripcion: description,
       url: vinculo,
-      fechainicio: formatDate(start),
-      fechafinal: formatDate(end),
-      imagen: imgPath,
+      fechainicio: start,
+      fechafinal: end,
+      imagen: imgName,
     };
     const connection = await getConnection();
 
     await connection.query("INSERT INTO eventos SET ?", event);
 
+    const eventResponse = {
+      ...event,
+      fechainicio: format(parseISO(start), "yyyy-MM-dd HH:mm:ss"),
+      fechafinal: format(parseISO(end), "yyyy-MM-dd HH:mm:ss"),
+    };
+
     // Mejor respuesta
     res.status(201).json({
       message: "Event created successfully",
-      event,
+      event: eventResponse,
     });
   } catch (error) {
     console.error("Error creating event:", error);
@@ -99,25 +101,39 @@ const actualizarEvento = async (req, res) => {
     console.log("Actualizando evento con id", id);
     console.log("Received body:", req.body);
     console.log("Received file:", req.file);
-    const { extendedProps, start, end, currentImage } = req.body;
 
-    // Formatear las fechas para MySQL
-    const formatDate = (dateStr) => {
-      const date = new Date(dateStr);
-      return date.toISOString().slice(0, 19).replace("T", " ");
-    };
+    const connection = await getConnection();
+
+    const { extendedProps } = req.body;
+
+    const [currentEvent] = await connection.query(
+      "SELECT imagen FROM eventos WHERE id = ?",
+      [id]
+    );
+
+    const [fecha] = await connection.query(
+      "SELECT fechainicio, fechafinal FROM eventos WHERE id = ?",
+      [id]
+    );
 
     let imgPath;
-    if (req.file) {
-      // Si hay un nuevo archivo, usar su ruta
-      imgPath = path.join("public", req.file.filename);
-    } else if (currentImage) {
-      // Si no hay nuevo archivo pero hay imagen existente, mantener la actual
-      imgPath = currentImage;
-    } else {
-      // Si no hay imagen nueva ni existente, establecer como null
-      imgPath = null;
+    if (req.file && currentEvent[0].imagen) {
+      try {
+        const oldImagePath = path.join(
+          __dirname,
+          "../../public",
+          currentEvent[0].imagen
+        );
+        await fs.unlink(oldImagePath);
+        console.log("Imagen anterior eliminada:", currentEvent[0].imagen);
+      } catch (error) {
+        if (error.code !== "ENOENT") {
+          console.error("Error al eliminar la imagen anterior:", error);
+        }
+      }
     }
+
+    const imageName = req.file ? req.file.filename : currentEvent[0].imagen;
 
     let title, area, description, vinculo;
     if (extendedProps) {
@@ -163,12 +179,11 @@ const actualizarEvento = async (req, res) => {
       titulo: title,
       descripcion: description,
       url: vinculo,
-      imagen: imgPath,
-      fechainicio: formatDate(start),
-      fechafinal: formatDate(end),
+      imagen: imageName,
+      fechainicio: fecha[0].fechainicio,
+      fechafinal: fecha[0].fechafinal,
     };
 
-    const connection = await getConnection();
     const result = await connection.query("UPDATE eventos SET ? WHERE id = ?", [
       event,
       id,
@@ -205,21 +220,9 @@ const eliminarEvento = async (req, res) => {
     console.log("Nombre de imagen encontrado:", imageName);
     if (imageName) {
       try {
-        // Normalizar la ruta y decodificar caracteres especiales
-        const normalizedImageName = decodeURIComponent(
-          imageName.replace(/\\/g, "/")
-        );
-        const imagePath = path.join(
-          __dirname,
-          "../../public",
-          normalizedImageName
-        );
-
-        console.log("Ruta completa de la imagen:", imagePath);
-
-        // Intentar eliminar el archivo directamente usando fs.promises
+        const imagePath = path.join(__dirname, "../../public", imageName);
         await fs.unlink(imagePath);
-        console.log("Imagen eliminada correctamente:", imagePath);
+        console.log("Imagen eliminada correctamente", imageName);
       } catch (error) {
         if (error.code === "ENOENT") {
           console.log("La imagen no existe en el servidor:", imagePath);

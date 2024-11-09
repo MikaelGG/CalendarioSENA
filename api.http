@@ -2,7 +2,7 @@ POST http://localhost:4000/api/event
 content-Type: application/json
 
 {
-  "id": "fechadehoy1223442/212312",
+  "id": "123124325346375347345734",
   "title": "Evento organizado",
   "start": "2024-10-29",
   "end": "2024-10-31",

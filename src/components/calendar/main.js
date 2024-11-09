@@ -5,6 +5,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import EventManager from "./scripts/EventManager";
 import listPlugin from "@fullcalendar/list";
+import { format, parseISO, subMinutes } from "date-fns";
 import "@dile/dile-modal/dile-modal";
 import "./style.css";
 
@@ -115,12 +116,24 @@ const handleOnSubmitForm = async (e) => {
     formData.append("currentImage", selectedEvent.extendedProps.imagen || null);
   }
 
-  if (!isEditMode) {
-    formData.append("start", selectedInfo.startStr);
-    formData.append("end", selectedInfo.endStr);
-  } else {
-    formData.append("start", selectedEvent.start.toISOString());
-    formData.append("end", selectedEvent.end.toISOString());
+  if (!isEditMode && !selectedEvent && selectedInfo) {
+    // Formatear fechas en formato MySQL (YYYY-MM-DD HH:mm:ss)
+    const formattedStart = format(
+      parseISO(selectedInfo.startStr),
+      "yyyy-MM-dd HH:mm:ss"
+    );
+
+    const endDate = parseISO(selectedInfo.endStr);
+    const adjustedEndDate = subMinutes(endDate, 30);
+    const formattedEnd = format(adjustedEndDate, "yyyy-MM-dd HH:mm:ss");
+
+    formData.append("start", formattedStart);
+    formData.append("end", formattedEnd);
+
+    console.log("Fechas formateadas enviadas:", {
+      start: formattedStart,
+      end: formattedEnd,
+    });
   }
 
   if (isEditMode && selectedEvent) {
@@ -218,6 +231,10 @@ const calendar = new Calendar(container, {
       slotDuration: "00:30:00", // Duration of each slot
       slotLabelInterval: { minutes: 30 }, // Show every hour
       allDaySlot: false,
+      titleFormat: { day: "numeric", month: "long", year: "numeric" },
+    },
+    list: {
+      titleFormat: { day: "numeric", month: "long", year: "numeric" },
     },
   },
   eventDurationEditable: true, // Asegura que se pueda ajustar la duración de los eventos
@@ -229,35 +246,57 @@ const calendar = new Calendar(container, {
       const eventElement = info.el;
       const startDate = info.event.start;
       const endDate = info.event.end || info.event.start;
-      endDate.setMinutes(endDate.getMinutes() - 30);
 
-      // Comprobamos si las fechas de inicio y fin son diferentes
-      if (startDate.toDateString() !== endDate.toDateString()) {
-        // Modificar el texto del encabezado del evento para reflejar el rango de fechas
-        const dayRangeText = `${startDate.toLocaleDateString("es-ES", {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-          meridiem: "short",
-        })} - ${endDate.toLocaleDateString("es-ES", {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-          meridiem: "short",
-        })}`;
+      const timeFormatter = new Intl.DateTimeFormat("es-ES", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
 
-        // Busca el elemento que contiene la fecha en la lista y modifícalo
-        const dateHeader = eventElement.querySelector(".fc-list-event-time");
-        if (dateHeader) {
-          dateHeader.innerHTML = dayRangeText; // Asigna el nuevo texto
-        }
+      const dateFormatter = new Intl.DateTimeFormat("es-ES", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      });
+
+      const dateHeader = eventElement.querySelector(".fc-list-event-time");
+      if (!dateHeader) return;
+
+      // Función auxiliar para capitalizar primera letra
+      const capitalizeFirst = (str) =>
+        str.charAt(0).toUpperCase() + str.slice(1);
+
+      // Función para formatear la hora
+      const formatTime = (date) => {
+        let timeStr = timeFormatter.format(date).toLowerCase();
+        // Reemplazar 'a. m.' y 'p. m.' por 'am' y 'pm'
+        timeStr = timeStr.replace("a. m.", "am").replace("p. m.", "pm");
+        return timeStr;
+      };
+
+      let formattedDateTime;
+
+      // Verificar si el evento es en el mismo día
+      if (startDate.toDateString() === endDate.toDateString()) {
+        // Formato para eventos del mismo día: "1:00 pm - 5:00 pm"
+        formattedDateTime = `${formatTime(startDate)} - ${formatTime(endDate)}`;
+      } else {
+        // Formato para eventos de varios días
+        const startDateStr = dateFormatter.format(startDate).toLowerCase();
+        const endDateStr = dateFormatter.format(endDate).toLowerCase();
+
+        // Extraer y formatear las partes de la fecha
+        const [startWeekday, startRest] = startDateStr.split(",");
+        const [endWeekday, endRest] = endDateStr.split(",");
+
+        // Formatear fechas y horas
+        formattedDateTime =
+          `${capitalizeFirst(startWeekday)} ${startRest.trim()}, ` +
+          `${capitalizeFirst(endWeekday)} ${endRest.trim()}, ` +
+          `${formatTime(startDate)} - ${formatTime(endDate)}`;
       }
+
+      dateHeader.innerHTML = formattedDateTime;
     }
   },
 
@@ -278,6 +317,11 @@ const calendar = new Calendar(container, {
   unselect: function () {
     clearTimeSlotHighlight(); // Limpia el resaltado al deseleccionar
   },
+  buttonText: {
+    dayGridMonth: "Vista del Mes",
+    timeGridWeek: "Registro de Eventos",
+    list: "Agenda de Eventos",
+  },
   eventContent: function (arg) {
     const eventEl = document.createElement("div");
     eventEl.className = "custom-event-content";
@@ -293,17 +337,14 @@ const calendar = new Calendar(container, {
             meridiem: "short",
           })
         : "";
-      let endTime = "";
-      if (arg.event.end) {
-        const endDate = new Date(arg.event.end); // Creamos una copia de la fecha de fin
-        endDate.setMinutes(endDate.getMinutes() - 30);
-        endTime = endDate.toLocaleTimeString("es-ES", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-          meridiem: "short",
-        });
-      }
+      const endTime = arg.event.end
+        ? arg.event.end.toLocaleTimeString("es-ES", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+            meridiem: "short",
+          })
+        : "";
 
       timeInfo.textContent = `${startTime} - ${endTime}`;
       eventEl.appendChild(timeInfo);
@@ -440,19 +481,19 @@ fileInput.addEventListener("change", function () {
 });
 
 //Abrir modal de eventos
-const event = document.getElementById("eventmodal");
-const buttoneve = document.getElementById("myBtn");
-const closeEven = document.getElementsByClassName("x")[0];
+// const event = document.getElementById("eventmodal");
+// const buttoneve = document.getElementById("myBtn");
+// const closeEven = document.getElementsByClassName("x")[0];
 
-buttoneve.onclick = function () {
-  event.open();
-};
+// buttoneve.onclick = function () {
+//   event.open();
+// };
 
-closeEven.onclick = function () {
-  event.style.display = "none";
-};
-window.onclick = function (e) {
-  if (e.target == event) {
-    modal.style.display = "none";
-  }
-};
+// closeEven.onclick = function () {
+//   event.style.display = "none";
+// };
+// window.onclick = function (e) {
+//   if (e.target == event) {
+//     modal.style.display = "none";
+//   }
+// };
