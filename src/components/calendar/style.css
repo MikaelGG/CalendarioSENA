@@ -226,7 +226,7 @@ body {
   font-weight: 600;
   position: absolute;
   left: -27.55px;
-  top: -1.59px;
+  top: -2px;
   width: 181px;
   height: 35px;
   display: flex;
@@ -432,22 +432,48 @@ body {
 
 .iniciarsesion {
   max-width: 700px;
-  align-items: end;
+  height: 220px;
+  position: absolute;
+  margin-left: 920px;
+  background-color: #eae4e4;
+  justify-items: center;
+  padding: 50px;
+  margin-top: 40px;
+  border-radius: 50px;
 }
 
 .iniciarsesion .inputins {
-  background-color: #eae4e4;
+  background-color: #ffffff;
   border: none;
   border-radius: 8px;
   display: block;
-  width: 30%;
   box-sizing: border-box;
   font-family: "Work Sans", sans-serif;
   font-weight: 600;
   font-optical-sizing: auto;
   font-style: normal;
   padding: 10px;
-  margin-bottom: 10px;
+  margin-top: 5px;
+  margin-bottom: 20px;
+  width: 265px;
+}
+
+.txtins {
+  font-family: "Work Sans", sans-serif;
+  font-weight: 400;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-size: 20px;
+  color: #04324d;
+}
+.txtiniciar {
+  font-family: "Work Sans", sans-serif;
+  font-weight: 500;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-size: 34px;
+  color: #39a900;
+  margin-top: -30px;
 }
 
 @media (max-width: 767px) {
