@@ -26,6 +26,7 @@
         />
       </div>
       <div class="barratxt work-sans">Calendario de eventos</div>
+      <button class="cerrarsesion" id="cerrarsesion">Cerrar sesión</button>
       <div class="calendar-container"></div>
       <footer class="footer">
         <img
@@ -78,22 +79,20 @@
         </div>
       </form>
     </dile-modal>
-    <dile-modal class="modal-evento" id="eventmodal">
-      <div class="rectangle-25"></div>
-      <div class="www-bienestaralaprendiz-googleforms-com">
-        www.bienestaralaprendiz.googleforms.com
+    <dile-modal id="eventmodal" blocking persistent>
+      <div class="modal-evento">
+        <div class="modal-header">
+          <h2 class="evento work-sans">Evento</h2>
+          <button class="x" aria-label="Cerrar">×</button>
+        </div>
+        <div class="modal-content">
+          <div class="vistaarea work-sans"></div>
+          <div class="vistatitulo work-sans"></div>
+          <div class="vistadescripcion work-sans"></div>
+          <a class="vistavinculo work-sans" target="_blank"></a>
+          <div class="vistaimagen work-sans" id="imgmodal"></div>
+        </div>
       </div>
-      <div
-        class="evento-encargado-de-tomar-registro-acerca-del-aprendiz-y-su-informaci-n-con-el-fin-de-tener-en-la-base-de-datos-todo-lo-que-se-necesita-para-ayudar-al-aprendiz-y-su-crecimiento-en-el-instituto-de-formaci-n-sena"
-      >
-        Evento encargado de tomar registro acerca del aprendiz y su información,
-        con el fin de tener en la base de datos todo lo que se necesita para
-        ayudar al aprendiz y su crecimiento en el instituto de formación SENA.
-      </div>
-      <div class="registro-de-aprendices">Registro de aprendices</div>
-      <div class="bienestar-al-aprendiz">Bienestar al aprendiz</div>
-      <div class="evento">Evento</div>
-      <div class="x">x</div>
     </dile-modal>
     <script type="module" src="main.js"></script>
   </body>

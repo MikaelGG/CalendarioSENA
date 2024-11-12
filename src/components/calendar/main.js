@@ -6,6 +6,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import EventManager from "./scripts/EventManager";
 import listPlugin from "@fullcalendar/list";
 import { format, parseISO, subMinutes } from "date-fns";
+import Swal from "sweetalert2";
 import "@dile/dile-modal/dile-modal";
 import "./style.css";
 
@@ -18,6 +19,19 @@ let selectedEvent = null;
 const eventManager = new EventManager();
 
 console.log("Eventos actuales:", eventManager.getEvents());
+
+function getUserRole() {
+  const user = JSON.parse(localStorage.getItem("user"));
+  return user ? parseInt(user.rol) : null;
+}
+
+function isAdmin() {
+  const role = getUserRole();
+  console.log("Current role:", role); // Para debugging
+  return role === 1;
+}
+console.log("User:", localStorage.getItem("user"));
+console.log("Token:", localStorage.getItem("token"));
 
 let isEditMode = false;
 
@@ -138,6 +152,16 @@ const handleOnSubmitForm = async (e) => {
 
   if (isEditMode && selectedEvent) {
     await eventManager.updateEvent(formData, selectedEvent.id);
+    Swal.fire({
+      position: "center",
+      icon: "success",
+      title: "Evento editado",
+      showConfirmButton: false,
+      timer: 3000,
+      customClass: {
+        title: "sweetAlert",
+      },
+    });
     await loadEvents();
   } else {
     const response = await eventManager.saveEvent(formData);
@@ -157,6 +181,17 @@ const handleOnSubmitForm = async (e) => {
         imagen: savedEvent.imagen,
       },
     });
+
+    Swal.fire({
+      position: "center",
+      icon: "success",
+      title: "Evento registrado",
+      showConfirmButton: false,
+      timer: 3000,
+      customClass: {
+        title: "sweetAlert",
+      },
+    });
   }
   calendar.refetchEvents();
   eventModal.close();
@@ -168,6 +203,16 @@ eventModal
     try {
       await eventManager.deleteEvent(selectedEvent.id);
       selectedEvent.remove();
+      Swal.fire({
+        position: "center",
+        icon: "success",
+        title: "Evento eliminado",
+        showConfirmButton: false,
+        timer: 3000,
+        customClass: {
+          title: "sweetAlert",
+        },
+      });
       eventModal.close();
     } catch (error) {
       console.error("Error al eliminar el evento y la imagen:", error);
@@ -216,9 +261,11 @@ const calendar = new Calendar(container, {
   headerToolbar: {
     left: "prev,next today",
     center: "title",
-    right: "dayGridMonth,timeGridWeek,listWeek",
+    right: isAdmin()
+      ? "dayGridMonth,timeGridWeek,listWeek"
+      : "dayGridMonth,listWeek",
   },
-  selectable: true,
+  selectable: isAdmin(),
   slotLabelFormat: {
     hour: "2-digit",
     minute: "2-digit",
@@ -228,6 +275,7 @@ const calendar = new Calendar(container, {
   // Define how many hours to display
   views: {
     timeGridWeek: {
+      display: isAdmin() ? "auto" : "none",
       slotDuration: "00:30:00", // Duration of each slot
       slotLabelInterval: { minutes: 30 }, // Show every hour
       allDaySlot: false,
@@ -237,7 +285,7 @@ const calendar = new Calendar(container, {
       titleFormat: { day: "numeric", month: "long", year: "numeric" },
     },
   },
-  eventDurationEditable: true, // Asegura que se pueda ajustar la duración de los eventos
+  eventDurationEditable: isAdmin(), // Asegura que se pueda ajustar la duración de los eventos
   snapDuration: "00:30:00",
   events: eventManager.getEvents(),
   eventDidMount: function (info) {
@@ -300,8 +348,45 @@ const calendar = new Calendar(container, {
     }
   },
 
-  eventClick: handleOnClickEvent,
+  eventClick: function (info) {
+    if (isAdmin()) {
+      Swal.fire({
+        title: "Seleccione una acción",
+        showCancelButton: true,
+        confirmButtonText: "Editar Evento",
+        cancelButtonText: "Ver Evento",
+        reverseButtons: true,
+        customClass: {
+          title: "sweetAlert",
+        },
+      }).then((result) => {
+        if (result.isConfirmed) {
+          handleOnClickEvent(info);
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          // Si el usuario hace clic en "Ver Evento"
+          showViewOnlyModal(info.event);
+        }
+      });
+    } else {
+      showViewOnlyModal(info.event);
+    }
+  },
   select: function (info) {
+    if (!isAdmin()) {
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        title: "No tiene permisos para crear eventos",
+        showConfirmButton: false,
+        timer: 3000,
+        customClass: {
+          title: "sweetAlert",
+        },
+      });
+      calendar.unselect();
+      return;
+    }
+
     // Guardar la selección
     selectedInfo = info;
 
@@ -408,6 +493,7 @@ let selectionStart = null;
 let selectionEnd = null;
 
 container.addEventListener("mousedown", (event) => {
+  if (!isAdmin()) return;
   const timeSlot = event.target.closest(".fc-timegrid-slot");
   if (timeSlot) {
     isSelecting = true;
@@ -423,6 +509,7 @@ container.addEventListener("mousedown", (event) => {
 
 // Listener para arrastrar y actualizar en vivo
 container.addEventListener("mousemove", (event) => {
+  if (!isAdmin() || !isSelecting) return;
   if (isSelecting) {
     const timeSlot = event.target.closest(".fc-timegrid-slot");
     if (timeSlot) {
@@ -441,6 +528,7 @@ function isExactHour(date) {
 
 // Modificar el listener de mouseup
 container.addEventListener("mouseup", (event) => {
+  if (!isAdmin() || !isSelecting) return;
   if (isSelecting) {
     isSelecting = false;
     clearTimeSlotHighlight(); // Limpia el resaltado manual de las celdas
@@ -468,7 +556,6 @@ container.addEventListener("mouseup", (event) => {
 });
 
 //seleccionador de archivos
-
 const fileInput = document.getElementById("filein");
 const fileName = document.getElementById("fileName");
 
@@ -480,20 +567,109 @@ fileInput.addEventListener("change", function () {
   }
 });
 
-//Abrir modal de eventos
-// const event = document.getElementById("eventmodal");
-// const buttoneve = document.getElementById("myBtn");
-// const closeEven = document.getElementsByClassName("x")[0];
+// Función para mostrar el modal de solo lectura usando el modal existente
+function showViewOnlyModal(event) {
+  const eventModal = document.getElementById("eventmodal");
 
-// buttoneve.onclick = function () {
-//   event.open();
-// };
+  eventModal.close();
 
-// closeEven.onclick = function () {
-//   event.style.display = "none";
-// };
-// window.onclick = function (e) {
-//   if (e.target == event) {
-//     modal.style.display = "none";
-//   }
-// };
+  // Actualizar el contenido del modal con los datos del evento
+  eventModal.querySelector(".vistatitulo").textContent =
+    event.extendedProps.title;
+  eventModal.querySelector(".vistaarea").textContent = event.extendedProps.area;
+  eventModal.querySelector(".vistadescripcion").textContent =
+    event.extendedProps.description;
+
+  // Actualizar el enlace si existe
+  const linkElement = eventModal.querySelector(".vistavinculo");
+  if (event.extendedProps.vinculo) {
+    linkElement.textContent = event.extendedProps.vinculo;
+    linkElement.href = event.extendedProps.vinculo;
+    linkElement.style.display = "block";
+  } else {
+    linkElement.style.display = "none";
+  }
+
+  // Assuming eventModal is a reference to the DOM element containing the "vistaimagen" class
+  const rectangleDiv = eventModal.querySelector(".vistaimagen");
+
+  rectangleDiv.onclick = null;
+
+  if (event.extendedProps.imagen) {
+    const imagePath = `/public/${event.extendedProps.imagen}`;
+    rectangleDiv.style.backgroundImage = `url(${imagePath})`;
+    rectangleDiv.style.display = "block";
+
+    rectangleDiv.addEventListener("click", () => {
+      const existingContainer = document.querySelector(
+        ".large-image-container"
+      );
+      if (existingContainer) {
+        existingContainer.remove();
+      }
+
+      const imageContainer = document.createElement("div");
+      imageContainer.classList.add("large-image-container");
+
+      const largeImage = new Image();
+      largeImage.src = imagePath;
+      largeImage.classList.add("large-image");
+
+      imageContainer.appendChild(largeImage);
+      document.body.appendChild(imageContainer);
+
+      imageContainer.addEventListener("click", (event) => {
+        if (event.target === imageContainer) {
+          document.body.removeChild(imageContainer);
+        }
+      });
+    });
+  } else {
+    rectangleDiv.style.backgroundImage = "none"; // Reset background image if no image available
+    rectangleDiv.style.display = "none";
+  }
+
+  // Configurar el botón de cerrar
+  const closeButton = eventModal.querySelector(".x");
+  closeButton.onclick = () => {
+    eventModal.close();
+  };
+
+  // Abrir el modal
+  eventModal.open();
+}
+
+// Función para cerrar sesión
+async function logout() {
+  console.log("Cerrando sesión...");
+  // Obtén el token y los datos del usuario
+  const user = JSON.parse(localStorage.getItem("user"));
+  const token = localStorage.getItem("token");
+
+  if (user && token) {
+    // Elimina el token y los datos del usuario del almacenamiento local
+    localStorage.removeItem("user");
+    localStorage.removeItem("token");
+
+    await Swal.fire({
+      position: "center",
+      icon: "success",
+      title: "Sesión cerrada",
+      showConfirmButton: false,
+      timer: 3000,
+      customClass: {
+        title: "sweetAlert",
+      },
+    });
+
+    // Redirige a la página de inicio de sesión o a una página de bienvenida
+    window.location.href = "/index.html";
+  } else {
+    console.log(
+      "No se encontró el usuario o token en el almacenamiento local."
+    );
+  }
+}
+
+// Escuchar el clic en el botón de cerrar sesión
+document.getElementById("cerrarsesion").addEventListener("click", logout);

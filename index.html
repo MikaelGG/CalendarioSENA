@@ -28,12 +28,12 @@
     <div class="barratxt work-sans">Calendario de eventos</div>
     <div class="iniciarsesion work-sans">
       <h2 class="txtiniciar">Iniciar sesión</h2>
-      <form>
+      <form id="formis">
         <label class="txtins">Documento de identidad</label>
         <input
           class="inputins"
           type="text"
-          name="area"
+          name="documentoidentidad"
           placeholder="Ingrese su documento"
         />
         <label class="txtins">Contraseña</label>
@@ -41,7 +41,7 @@
           class="inputins"
           type="password"
           placeholder="Ingrese su contraseña"
-          name="title"
+          name="contraseña"
         />
         <div class="cart-button" style="margin-left: 70px; margin-top: 30px">
           <button type="submit" class="registrar">Ingresar</button>
@@ -64,5 +64,9 @@
         Análisis y Desarrollo de Software. | Versión 1.0.0
       </p>
     </footer>
+    <script
+      type="module"
+      src="/src/components/calendar/scripts/LoguinManager.js"
+    ></script>
   </body>
 </html>

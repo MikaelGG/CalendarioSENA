@@ -3,6 +3,7 @@ import multer from "multer";
 import { fileURLToPath } from "url";
 import path from "path";
 import { querys as eventController } from "../controller/event.controller.js";
+import { verifyToken, isAdmin } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -23,14 +24,22 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // POST
-router.post("/", upload.single("img"), eventController.crearEvento);
+router.post(
+  "/",
+  [verifyToken, upload.single("img")],
+  eventController.crearEvento
+);
 
 // GET
 router.get("/", eventController.obtenerEvento);
 
 // PUT
-router.put("/:id", upload.single("img"), eventController.actualizarEvento);
+router.put(
+  "/:id",
+  [verifyToken, upload.single("img")],
+  eventController.actualizarEvento
+);
 
 // DELETE
-router.delete("/:id", eventController.eliminarEvento);
+router.delete("/:id", verifyToken, eventController.eliminarEvento);
 export default router;
