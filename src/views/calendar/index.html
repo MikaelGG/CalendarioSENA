@@ -45,21 +45,38 @@
     <dile-modal id="event-modal" class="modal-container">
       <h2 class="work-sans" id="tev">Gestionar evento</h2>
       <form>
-        <input class="inputtxt" type="text" name="area" placeholder="Area" />
+        <select id="select" name="area" class="inputtxt select">
+          <option class="option" value="">Seleccionar área</option>
+        </select>
+        <p id="areaError" class="error-message work-sans"></p>
         <input
           class="inputtxt"
           type="text"
           placeholder="Nombre del evento"
           name="title"
+          id="ttl"
         />
+        <p id="titleError" class="error-message work-sans"></p>
         <textarea
           name="description"
-          id=""
           cols="30"
           rows="6"
           placeholder="Descripción del evento"
         ></textarea>
-        <input class="inputtxt" type="text" placeholder="URL" name="vinculo" />
+        <p id="descriptionError" class="error-message work-sans"></p>
+        <input
+          class="inputtxt"
+          type="text"
+          placeholder="Lugar del evento"
+          name="place"
+        />
+        <p id="placeError" class="error-message work-sans"></p>
+        <input
+          class="inputtxt"
+          type="text"
+          placeholder="Enlace de inscripción (No obligatorio)"
+          name="vinculo"
+        />
         <label class="lbarchivo work-sans" for="filein"
           >Seleccionar archivo</label
         >
@@ -86,14 +103,26 @@
           <button class="x" aria-label="Cerrar">×</button>
         </div>
         <div class="modal-content">
+          <div class="txtarea work-sans">Área:</div>
           <div class="vistaarea work-sans"></div>
           <div class="vistatitulo work-sans"></div>
           <div class="vistadescripcion work-sans"></div>
+          <div class="horalugar">
+            <div class="hora work-sans"></div>
+            <div class="esp"></div>
+            <div class="lugar work-sans"></div>
+          </div>
           <a class="vistavinculo work-sans" target="_blank"></a>
-          <div class="vistaimagen work-sans" id="imgmodal"></div>
+          <div class="vistaimagen work-sans" id="imgmodal">
+            Ver e-card del evento
+          </div>
         </div>
       </div>
     </dile-modal>
     <script type="module" src="main.js"></script>
+    <script
+      type="module"
+      src="/src/views/calendar/scripts/areaSelectManager.js"
+    ></script>
   </body>
 </html>

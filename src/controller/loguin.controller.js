@@ -76,7 +76,7 @@ const loguin = async (req, res) => {
         rol: doccon[0].rol,
         contra: doccon[0].contraseña,
       },
-      redirect: "../src/components/calendar/index.html",
+      redirect: "../src/views/calendar/index.html",
     });
 
     // const storedToken = localStorage.getItem("token");

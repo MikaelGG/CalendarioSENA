@@ -6,6 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import eventRoutes from "./src/routes/event.route.js";
 import loguinRoute from "./src/routes/loguin.route.js";
+import areaRoute from "./src/routes/area.route.js";
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use((err, req, res, next) => {
 // Routes
 app.use("/api/event", eventRoutes);
 app.use("/api/loguin", loguinRoute);
+app.use("/api/area", areaRoute);
 
 // Manejador global de errores
 app.use((err, req, res, next) => {

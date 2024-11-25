@@ -14,7 +14,7 @@ const crearEvento = async (req, res) => {
     const imgName = req.file ? req.file.filename : null;
 
     // Verificar el contenido de extendedProps y parsearlo
-    let title, area, description, vinculo;
+    let title, area, description, place, vinculo;
     if (extendedProps) {
       const parsedProps = JSON.parse(extendedProps);
       console.log("Parsed extendedProps:", parsedProps);
@@ -22,6 +22,7 @@ const crearEvento = async (req, res) => {
       title = parsedProps.title;
       area = parsedProps.area;
       description = parsedProps.description;
+      place = parsedProps.place;
       vinculo = parsedProps.vinculo;
 
       console.log(
@@ -31,6 +32,8 @@ const crearEvento = async (req, res) => {
         area,
         "Description:",
         description,
+        "Place:",
+        place,
         "Vinculo:",
         vinculo
       );
@@ -41,7 +44,7 @@ const crearEvento = async (req, res) => {
     }
 
     // Validación básica
-    if (!title || !area || !description) {
+    if (!title || !area || !description || !place) {
       return res.status(400).json({
         message: "Title, area and description are required",
       });
@@ -52,6 +55,7 @@ const crearEvento = async (req, res) => {
       titulo: title,
       area: area,
       descripcion: description,
+      lugar: place,
       url: vinculo,
       fechainicio: start,
       fechafinal: end,
@@ -135,7 +139,7 @@ const actualizarEvento = async (req, res) => {
 
     const imageName = req.file ? req.file.filename : currentEvent[0].imagen;
 
-    let title, area, description, vinculo;
+    let title, area, description, place, vinculo;
     if (extendedProps) {
       let parsedProps;
       try {
@@ -149,6 +153,7 @@ const actualizarEvento = async (req, res) => {
         title = parsedProps.title;
         area = parsedProps.area;
         description = parsedProps.description;
+        place = parsedProps.place;
         vinculo = parsedProps.vinculo;
 
         console.log(
@@ -158,6 +163,8 @@ const actualizarEvento = async (req, res) => {
           area,
           "Description:",
           description,
+          "Place:",
+          place,
           "Vinculo:",
           vinculo
         );
@@ -178,6 +185,7 @@ const actualizarEvento = async (req, res) => {
       area,
       titulo: title,
       descripcion: description,
+      lugar: place,
       url: vinculo,
       imagen: imageName,
       fechainicio: fecha[0].fechainicio,

@@ -58,6 +58,8 @@ const openModal = () => {
       selectedEvent.extendedProps.title;
     form.querySelector('[name="description"]').value =
       selectedEvent.extendedProps.description;
+    form.querySelector('[name="place"]').value =
+      selectedEvent.extendedProps.place;
     form.querySelector('[name="vinculo"]').value =
       selectedEvent.extendedProps.vinculo;
 
@@ -65,7 +67,7 @@ const openModal = () => {
     const fullPath = selectedEvent.extendedProps.imagen;
     const imageName = fullPath
       ? fullPath.split("\\").pop().split("/").pop()
-      : "Ningún archivo seleccionado";
+      : "Ningún archivo seleccionado (No obligatorio)";
 
     // Mostrar el nombre del archivo en el span del formulario
     document.getElementById("fileName").textContent = imageName;
@@ -81,12 +83,12 @@ const openModal = () => {
       tev.innerHTML = "Editar evento";
     }
     eventModal.querySelector(".delete-event-btn").classList.remove("d-none");
-    eventModal.querySelector("button[type='submit']").innerHTML = "Editar";
+    eventModal.querySelector("button[type='submit']").innerHTML = "Confirmar";
   } else {
     // Modo registro
     form.reset();
     document.getElementById("fileName").textContent =
-      "Ningún archivo seleccionado";
+      "Ningún archivo seleccionado (No obligatorio)";
     const btnsContainer = eventModal.querySelector(
       ".btns-container, .btns-container2"
     );
@@ -105,8 +107,52 @@ const openModal = () => {
 const handleOnSubmitForm = async (e) => {
   e.preventDefault();
   const area = e.target.querySelector('[name="area"]').value;
+  const areaError = document.getElementById("areaError");
+  if (!area) {
+    areaError.textContent = "¡Selecciona un Área!"; // Muestra el mensaje
+    areaError.style.display = "block"; // Asegúrate de que sea visible
+    return; // Detiene la ejecución si no es válido
+  } else {
+    areaError.textContent = ""; // Limpia el mensaje
+    areaError.style.display = "none"; // Oculta el mensaje si es válido
+  }
+
   const title = e.target.querySelector('[name="title"]').value;
+  const titleError = document.getElementById("titleError");
+  if (title.length <= 5 || title.length >= 65) {
+    titleError.textContent =
+      "¡El titulo debe ser mayor de 5 y menor de 65 carácteres!"; // Muestra el mensaje
+    titleError.style.display = "block"; // Asegúrate de que sea visible
+    return; // Detiene la ejecución si no es válido
+  } else {
+    titleError.textContent = ""; // Limpia el mensaje
+    titleError.style.display = "none"; // Oculta el mensaje si es válido
+  }
+
   const description = e.target.querySelector('[name="description"]').value;
+  const descriptionError = document.getElementById("descriptionError");
+  if (description.length <= 15 || description.length >= 315) {
+    descriptionError.textContent =
+      "¡La descripción debe ser mayor de 15 y menor de 315 carácteres!"; // Muestra el mensaje
+    descriptionError.style.display = "block"; // Asegúrate de que sea visible
+    return; // Detiene la ejecución si no es válido
+  } else {
+    descriptionError.textContent = ""; // Limpia el mensaje
+    descriptionError.style.display = "none"; // Oculta el mensaje si es válido
+  }
+
+  const place = e.target.querySelector('[name="place"]').value;
+  const placeError = document.getElementById("placeError");
+  if (place.length <= 5 || place.length >= 45) {
+    placeError.textContent =
+      "¡El lugar del evento debe ser mayor de 15 y menor de 45 carácteres!"; // Muestra el mensaje
+    placeError.style.display = "block"; // Asegúrate de que sea visible
+    return; // Detiene la ejecución si no es válido
+  } else {
+    placeError.textContent = ""; // Limpia el mensaje
+    placeError.style.display = "none"; // Oculta el mensaje si es válido
+  }
+
   const vinculo = e.target.querySelector('[name="vinculo"]').value;
   const imagen = e.target.querySelector('[name="img"]').files[0];
 
@@ -118,6 +164,7 @@ const handleOnSubmitForm = async (e) => {
       area,
       title,
       description,
+      place,
       vinculo,
     })
   );
@@ -177,6 +224,7 @@ const handleOnSubmitForm = async (e) => {
         title: savedEvent.titulo,
         area: savedEvent.area,
         description: savedEvent.descripcion,
+        place: savedEvent.lugar,
         vinculo: savedEvent.url,
         imagen: savedEvent.imagen,
       },
@@ -445,15 +493,6 @@ const calendar = new Calendar(container, {
     title.textContent = arg.event.extendedProps.title;
     eventEl.appendChild(title);
 
-    const description = document.createElement("div");
-    description.className = "event-description";
-    let descText = arg.event.extendedProps.description || "";
-    if (descText.length > 50) {
-      descText = descText.substring(0, 50) + "...";
-    }
-    description.textContent = descText;
-    eventEl.appendChild(description);
-
     return { domNodes: [eventEl] };
   },
 });
@@ -473,6 +512,7 @@ async function loadEvents() {
         title: event.titulo, // Mapea el título
         area: event.area,
         description: event.descripcion,
+        place: event.lugar,
         vinculo: event.url,
         imagen: event.imagen,
       },
@@ -569,6 +609,7 @@ fileInput.addEventListener("change", function () {
 
 // Función para mostrar el modal de solo lectura usando el modal existente
 function showViewOnlyModal(event) {
+  console.log("Eventos para ver:", event);
   const eventModal = document.getElementById("eventmodal");
 
   eventModal.close();
@@ -579,12 +620,18 @@ function showViewOnlyModal(event) {
   eventModal.querySelector(".vistaarea").textContent = event.extendedProps.area;
   eventModal.querySelector(".vistadescripcion").textContent =
     event.extendedProps.description;
+  eventModal.querySelector(".hora").textContent = format(
+    event.startStr,
+    "HH:mm a"
+  );
+  eventModal.querySelector(".lugar").textContent = event.extendedProps.place;
 
   // Actualizar el enlace si existe
   const linkElement = eventModal.querySelector(".vistavinculo");
   if (event.extendedProps.vinculo) {
-    linkElement.textContent = event.extendedProps.vinculo;
+    linkElement.textContent = "Enlace de inscripción";
     linkElement.href = event.extendedProps.vinculo;
+    console.log(event.extendedProps.vinculo);
     linkElement.style.display = "block";
   } else {
     linkElement.style.display = "none";
@@ -597,7 +644,6 @@ function showViewOnlyModal(event) {
 
   if (event.extendedProps.imagen) {
     const imagePath = `/public/${event.extendedProps.imagen}`;
-    rectangleDiv.style.backgroundImage = `url(${imagePath})`;
     rectangleDiv.style.display = "block";
 
     rectangleDiv.addEventListener("click", () => {
@@ -672,4 +718,9 @@ async function logout() {
 }
 
 // Escuchar el clic en el botón de cerrar sesión
+
+if (getUserRole() === null) {
+  document.getElementById("cerrarsesion").classList.add("d-none");
+}
+
 document.getElementById("cerrarsesion").addEventListener("click", logout);
